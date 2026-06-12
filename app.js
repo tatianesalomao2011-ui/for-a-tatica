@@ -185,18 +185,96 @@ function initializeFormControls() {
   populateSelectOptions("cargo", cargos, "Selecione");
 }
 
-let database = loadDatabase();
+let database = null;
 let currentUser = null;
+let firebaseReady = false;
 
-document.querySelectorAll("[data-icon]").forEach((node) => {
-  node.innerHTML = icons[node.dataset.icon] || "";
-});
+// Esperar Firebase estar pronto
+function initializeFirebase() {
+  if (typeof firebase === 'undefined') {
+    setTimeout(initializeFirebase, 100);
+    return;
+  }
+  
+  firebaseReady = true;
+  
+  document.querySelectorAll("[data-icon]").forEach((node) => {
+    node.innerHTML = icons[node.dataset.icon] || "";
+  });
+  initializeFormControls();
+  
+  loadDatabase();
+}
+
+function loadDatabase() {
+  db.ref("ft13").once('value', (snapshot) => {
+    if (snapshot.exists()) {
+      database = snapshot.val();
+    } else {
+      database = structuredClone(starterData);
+    }
+    
+    // Normalizar dados
+    database.pendingRequests = database.pendingRequests || [];
+    database.members = (database.members || []).map((member) => ({
+      ...member,
+      status: "Ativo",
+      cargo: member.cargo === "Administrativo Força Tática (permissao geral)" ? "Administrativo Força Tática" : member.cargo,
+    }));
+    database.users = (database.users || []).map((user) => ({
+      ...user,
+      status: user.status || "approved",
+      cargo: user.cargo === "Administrativo Força Tática (permissao geral)" ? "Administrativo Força Tática" : user.cargo,
+    }));
+    database.users = (database.users || []).map((user) => {
+      const member = database.members.find((item) => normalize(item.discord) === normalize(user.discord));
+      return { ...user, cargo: user.cargo || member?.cargo || "Aluno" };
+    });
+    database.records = database.records || [];
+    database.warnings = database.warnings || [];
+    database.certificates = database.certificates || [];
+    database.courses = database.courses || [];
+    database.activity = database.activity || [];
+    
+    ensureAdminAccount(database);
+    renderAll();
+    
+    // Verificar sessão após banco carregar
+    const storedSession = localStorage.getItem(SESSION_KEY);
+    if (storedSession) {
+      const session = JSON.parse(storedSession);
+      currentUser = database.users.find((user) => normalize(user.discord) === normalize(session.discord) && user.status === "approved") || null;
+      if (!currentUser) {
+        localStorage.removeItem(SESSION_KEY);
+        showLogin();
+      } else {
+        showApp();
+      }
+    } else {
+      showLogin();
+    }
+  }).catch(() => {
+    database = structuredClone(starterData);
+    showLogin();
+  });
+}
+
+function saveDatabase() {
+  if (!firebaseReady || !database) return;
+  db.ref("ft13").set(database).catch((error) => {
+    console.error("Erro ao salvar:", error);
+  });
+}
+
+initializeFirebase();
 
 function ensureAdminAccount(db) {
-  const hasApprover = db.users.some((user) => approverRoles.has(user.cargo));
+  const hasApprover = db.users && db.users.some((user) => approverRoles.has(user.cargo));
   if (!hasApprover) {
     const admin = { ...ADMIN_ACCOUNT };
+    if (!db.users) db.users = [];
     db.users.unshift(admin);
+    if (!db.members) db.members = [];
     if (!db.members.some((member) => normalize(member.discord) === normalize(admin.discord))) {
       db.members.unshift({
         nome: admin.nome,
@@ -206,46 +284,11 @@ function ensureAdminAccount(db) {
         status: "Ativo",
       });
     }
+    if (!db.activity) db.activity = [];
     db.activity.unshift("Conta administrativa padrão criada: usuário admin / senha Admin@1234.");
     db.activity = db.activity.slice(0, 8);
+    saveDatabase();
   }
-}
-
-function loadDatabase() {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(starterData));
-    return structuredClone(starterData);
-  }
-
-  try {
-    const parsed = JSON.parse(stored);
-    const merged = { ...structuredClone(starterData), ...parsed };
-    merged.pendingRequests = merged.pendingRequests || [];
-    merged.users = (merged.users || []).map((user) => ({
-      ...user,
-      status: user.status || "approved",
-      cargo: user.cargo === "Administrativo Força Tática (permissao geral)" ? "Administrativo Força Tática" : user.cargo,
-    }));
-    merged.members = (merged.members || []).map((member) => ({
-      ...member,
-      status: "Ativo",
-      cargo: member.cargo === "Administrativo Força Tática (permissao geral)" ? "Administrativo Força Tática" : member.cargo,
-    }));
-    merged.users = merged.users.map((user) => {
-      const member = merged.members.find((item) => normalize(item.discord) === normalize(user.discord));
-      return { ...user, cargo: user.cargo || member?.cargo || "Aluno" };
-    });
-    ensureAdminAccount(merged);
-    return merged;
-  } catch {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(starterData));
-    return structuredClone(starterData);
-  }
-}
-
-function saveDatabase() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(database));
 }
 
 function normalize(value) {
@@ -701,18 +744,4 @@ document.querySelectorAll(".management-form").forEach((form) => {
   });
 });
 
-const storedSession = localStorage.getItem(SESSION_KEY);
-if (storedSession) {
-  const session = JSON.parse(storedSession);
-  currentUser =
-    database.users.find((user) => normalize(user.discord) === normalize(session.discord) && user.status === "approved") ||
-    null;
-  if (!currentUser) {
-    localStorage.removeItem(SESSION_KEY);
-    showLogin();
-  } else {
-    showApp();
-  }
-} else {
-  showLogin();
-}
+initializeFirebase();
