@@ -117,15 +117,35 @@ const managementDefinitions = {
   },
 };
 
+const ADMIN_ACCOUNT = {
+  nome: "Comandante",
+  patente: "Coronel",
+  discord: "admin",
+  senha: "Admin@1234",
+  cargo: "Comandante da Força Tática",
+  status: "approved",
+};
+
 const starterData = {
-  users: [],
+  users: [ADMIN_ACCOUNT],
   pendingRequests: [],
-  members: [],
+  members: [
+    {
+      nome: ADMIN_ACCOUNT.nome,
+      patente: ADMIN_ACCOUNT.patente,
+      discord: ADMIN_ACCOUNT.discord,
+      cargo: ADMIN_ACCOUNT.cargo,
+      status: "Ativo",
+    },
+  ],
   records: [],
   warnings: [],
   certificates: [],
   courses: [],
-  activity: ["Sistema iniciado. Cadastre o primeiro operador para acessar o painel."],
+  activity: [
+    "Conta administrativa padrão criada: usuário admin / senha Admin@1234.",
+    "Sistema iniciado. Cadastre novos operadores e gerencie solicitações.",
+  ],
 };
 
 const panelTitles = {
@@ -172,6 +192,25 @@ document.querySelectorAll("[data-icon]").forEach((node) => {
   node.innerHTML = icons[node.dataset.icon] || "";
 });
 
+function ensureAdminAccount(db) {
+  const hasApprover = db.users.some((user) => approverRoles.has(user.cargo));
+  if (!hasApprover) {
+    const admin = { ...ADMIN_ACCOUNT };
+    db.users.unshift(admin);
+    if (!db.members.some((member) => normalize(member.discord) === normalize(admin.discord))) {
+      db.members.unshift({
+        nome: admin.nome,
+        patente: admin.patente,
+        discord: admin.discord,
+        cargo: admin.cargo,
+        status: "Ativo",
+      });
+    }
+    db.activity.unshift("Conta administrativa padrão criada: usuário admin / senha Admin@1234.");
+    db.activity = db.activity.slice(0, 8);
+  }
+}
+
 function loadDatabase() {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (!stored) {
@@ -197,6 +236,7 @@ function loadDatabase() {
       const member = merged.members.find((item) => normalize(item.discord) === normalize(user.discord));
       return { ...user, cargo: user.cargo || member?.cargo || "Aluno" };
     });
+    ensureAdminAccount(merged);
     return merged;
   } catch {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(starterData));
