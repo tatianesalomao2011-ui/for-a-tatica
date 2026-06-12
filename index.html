@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Força Tática | Gestão Operacional</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="locked dark">
+    <section class="auth-screen" id="authScreen" aria-label="Tela de login">
+      <form class="login-card" id="loginForm">
+        <div class="login-head">
+          <span class="module-icon" data-icon="lock"></span>
+          <div>
+            <p class="eyebrow">Força Tática 13° BPM </p>
+          </div>
+        </div>
+        <label>Nome Operacional ou ID do Discord
+          <input autocomplete="username" name="identificador" placeholder="Ex.: Almeida ou 123456789" required />
+        </label>
+        <label>Senha
+          <input autocomplete="current-password" name="senha" placeholder="Sua senha" required type="password" />
+        </label>
+        <button class="button primary" type="submit">Entrar no sistema</button>
+        <output id="loginMessage" aria-live="polite"></output>
+        <button class="auth-link" id="showRegisterButton" type="button">Registrar</button>
+      </form>
+
+      <form class="login-card auth-register" id="registerForm" hidden>
+        <div class="login-head">
+          <span class="module-icon" data-icon="users"></span>
+          <div>
+            <p class="eyebrow">Novo acesso</p>
+            <h1>Registrar</h1>
+          </div>
+        </div>
+        <label>Nome Operacional
+          <input autocomplete="name" name="cadastroNome" placeholder="Ex.: Almeida" required />
+        </label>
+        <label>Patente
+          <select name="cadastroPatente" required>
+            <option value="">Selecione</option>
+            <option>Cabo</option>
+            <option>3&deg; Sargento</option>
+            <option>2&deg; Sargento</option>
+            <option>1&deg; Sargento</option>
+            <option>Subtenente</option>
+            <option>2&deg; Tenente</option>
+            <option>1&deg; Tenente</option>
+            <option>Capitao</option>
+            <option>Major</option>
+            <option>Tenente Coronel</option>
+            <option>Coronel</option>
+          </select>
+        </label>
+        <label>ID do Discord
+          <input name="cadastroDiscord" placeholder="Ex.: 123456789" required />
+        </label>
+        <label>Senha
+          <input name="cadastroSenha" placeholder="Crie uma senha" required type="password" />
+        </label>
+        <button class="button primary" type="submit">Criar registro</button>
+        <output id="registerMessage" aria-live="polite"></output>
+        <button class="auth-link" id="showLoginButton" type="button">Voltar para logar</button>
+      </form>
+    </section>
+
+    <div class="app-shell" id="appShell" aria-hidden="true">
+      <header class="topbar">
+        <a class="brand" href="#inicio" aria-label="Força Tática 13 BPM">
+          <span class="brand-mark">13</span>
+          <span>
+            <strong>Força Tática</strong>
+            <small>13&deg; Batalhão da Polícia Militar</small>
+          </span>
+        </a>
+        <nav class="nav" aria-label="Navegação principal">
+          <button class="nav-button" data-target="dashboard" type="button">Dashboard</button>
+          <button class="nav-button" data-target="members" type="button">Membros</button>
+          <button class="nav-button" data-target="warnings" type="button">Advertências</button>
+          <button class="nav-button" data-target="certificates" type="button">Certificados</button>
+          <button class="nav-button" data-target="pending" type="button">Pendentes</button>
+        </nav>
+        <div class="top-actions">
+          <button class="button ghost" id="logoutButton" type="button">Sair</button>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero" id="inicio">
+          <div class="hero-content">
+            <p class="eyebrow">Sistema institucional de gestão</p>
+            <h1>Força Tática do 13&deg; Batalhão da Polícia Militar</h1>
+            <p>
+              Plataforma para administrar efetivo, registros internos, advertências,
+              certificados, cursos operacionais e áreas restritas com
+              rastreabilidade local.
+            </p>
+            <div class="hero-actions">
+              <button class="button primary" id="enterPanelButton" type="button">Acessar painel</button>
+            </div>
+          </div>
+          <div class="status-strip" aria-label="Indicadores do sistema">
+            <div>
+              <strong id="membersCount">0</strong>
+              <span>Membros ativos</span>
+            </div>
+            <div>
+              <strong id="recordsCount">0</strong>
+              <span>Registros internos</span>
+            </div>
+            <div>
+              <strong id="pendingCount">0</strong>
+              <span>Solicitações pendentes</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="section public-band" id="publico">
+          <div class="section-heading">
+            <p class="eyebrow">Transparência e serviço</p>
+            <h2>Seções públicas</h2>
+            <p>
+              Informações institucionais, canal de atendimento e comunicados sem
+              exposição de dados sensíveis.
+            </p>
+          </div>
+          <div class="public-grid">
+            <article>
+              <span class="module-icon" data-icon="shield"></span>
+              <h3>Institucional</h3>
+              <p>Missão, atribuições e comunicados oficiais da Força Tática.</p>
+            </article>
+            <article>
+              <span class="module-icon" data-icon="megaphone"></span>
+              <h3>Comunicados</h3>
+              <p>Publicações recentes para militares, familiares e comunidade.</p>
+            </article>
+            <article>
+              <span class="module-icon" data-icon="lock"></span>
+              <h3>Acesso seguro</h3>
+              <p>Entrada protegida para operadores, comando e administradores.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="photo-band" aria-label="Força Tática em operação">
+          <figure class="photo-feature">
+            <img
+              src="https://cotia.sp.gov.br/wp-content/uploads/2025/11/pm_foto-secom-cotia-scaled.jpg"
+              alt="Policiais militares com uniforme e braçal da Força Tática de São Paulo"
+            />
+            <figcaption>
+              <span class="eyebrow">Imagem real</span>
+              <strong>Força Tática PMESP</strong>
+              <p>Visual inspirado no uniforme operacional, nas viaturas cinza/branco e na faixa vermelha da identidade visual paulista.</p>
+            </figcaption>
+          </figure>
+        </section>
+
+        <section class="section" id="modulos">
+          <div class="section-heading">
+            <p class="eyebrow">Operação interna</p>
+            <h2>Módulos de gestão</h2>
+            <p>Ferramentas centrais para organizar a rotina administrativa e operacional.</p>
+          </div>
+          <div class="module-grid">
+            <article class="module-card">
+              <span class="module-icon" data-icon="users"></span>
+              <h3>Cadastro de membros</h3>
+              <p>Ficha funcional, contato, graduacao, status e vinculo de equipe.</p>
+            </article>
+            <article class="module-card">
+              <span class="module-icon" data-icon="file"></span>
+              <h3>Registros internos</h3>
+              <p>Ocorrencias administrativas, escalas, atas, relatorios e historico.</p>
+            </article>
+            <article class="module-card">
+              <span class="module-icon" data-icon="alert"></span>
+              <h3>Advertências</h3>
+              <p>Atribuição controlada com motivo, responsável, prazo e ciência.</p>
+            </article>
+            <article class="module-card">
+              <span class="module-icon" data-icon="award"></span>
+              <h3>Certificados</h3>
+              <p>Emissão de certificados com código de validação e trilha de auditoria.</p>
+            </article>
+            <article class="module-card">
+              <span class="module-icon" data-icon="book"></span>
+              <h3>Cursos</h3>
+              <p>Turmas, instrutores, presença, aprovação e materiais de apoio.</p>
+            </article>
+            <article class="module-card">
+              <span class="module-icon" data-icon="database"></span>
+              <h3>Banco local</h3>
+              <p>Dados persistidos no navegador para demonstracao sem servidor externo.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="workspace" id="privado" aria-label="Painel privado">
+          <aside class="sidebar">
+            <div>
+              <p class="eyebrow">Área privada</p>
+              <h2>Painel seguro</h2>
+            </div>
+            <button class="tab active" data-tab="dashboard" type="button">
+              <span data-icon="grid"></span> Visão geral
+            </button>
+            <button class="tab" data-tab="members" type="button">
+              <span data-icon="users"></span> Membros
+            </button>
+            <button class="tab" data-tab="records" type="button">
+              <span data-icon="file"></span> Registros
+            </button>
+            <button class="tab" data-tab="warnings" type="button">
+              <span data-icon="alert"></span> Advertências
+            </button>
+            <button class="tab" data-tab="certificates" type="button">
+              <span data-icon="award"></span> Certificados
+            </button>
+            <button class="tab" data-tab="courses" type="button">
+              <span data-icon="book"></span> Cursos
+            </button>
+            <button class="tab" data-tab="pending" type="button">
+              <span data-icon="users"></span> Pendentes
+            </button>
+          </aside>
+
+          <div class="panel">
+            <div class="panel-toolbar">
+              <div>
+                <p class="eyebrow">Sessão autenticada</p>
+                <h2 id="panelTitle">Visão geral</h2>
+              </div>
+              <div class="security-chip">
+                <span data-icon="database"></span>
+                Banco local ativo
+              </div>
+            </div>
+
+            <section class="tab-panel active" id="dashboard">
+              <div class="metrics">
+                <article>
+                  <span>Membros</span>
+                  <strong id="dashMembers">0</strong>
+                </article>
+                <article>
+                  <span>Cursos</span>
+                  <strong id="dashCourses">0</strong>
+                </article>
+                <article>
+                  <span>Certificados</span>
+                  <strong id="dashCertificates">0</strong>
+                </article>
+                <article>
+                  <span>Pendentes</span>
+                  <strong id="dashPending">0</strong>
+                </article>
+              </div>
+              <div class="activity">
+                <h3>Fluxo recente</h3>
+                <ol id="activityList"></ol>
+              </div>
+            </section>
+
+            <section class="tab-panel" id="members">
+              <div class="member-note">
+                <p>Efetivo consolidado automaticamente. Apenas membros aprovados aparecem nesta lista.</p>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Nome</th><th>Patente</th><th>ID Discord</th><th>Cargo</th><th>Adv.</th><th>Cert.</th><th>Cursos</th><th>Ações</th></tr></thead>
+                  <tbody id="membersTable"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="tab-panel" id="records">
+              <form class="management-form" data-form="record">
+                <label>Tipo <input required name="tipo" placeholder="Ata, escala, relatório" /></label>
+                <label>Descrição <input required name="descricao" placeholder="Resumo do registro" /></label>
+                <label>Responsável <input required name="responsavel" placeholder="Nome do responsável" /></label>
+                <button class="button primary" type="submit">Adicionar registro</button>
+              </form>
+              <ul class="record-list" id="recordsList"></ul>
+            </section>
+
+            <section class="tab-panel" id="warnings">
+              <form class="management-form" data-form="warning">
+                <label>Membro <input required name="membro" placeholder="Nome do membro" /></label>
+                <label>Motivo <input required name="motivo" placeholder="Descrição objetiva" /></label>
+                <label>Prazo <input required name="prazo" type="date" /></label>
+                <button class="button primary" type="submit">Atribuir advertencia</button>
+              </form>
+              <ul class="record-list" id="warningsList"></ul>
+            </section>
+
+            <section class="tab-panel" id="certificates">
+              <form class="management-form" data-form="certificate">
+                <label>Aluno <input required name="aluno" placeholder="Nome do aluno" /></label>
+                <label>Curso <input required name="curso" placeholder="Nome do curso" /></label>
+                <label>Carga horária <input required name="carga" placeholder="Ex.: 40h" /></label>
+                <button class="button primary" type="submit">Emitir certificado</button>
+              </form>
+              <div class="certificate-preview" id="certificatePreview"></div>
+              <ul class="record-list" id="certificatesList"></ul>
+            </section>
+
+            <section class="tab-panel" id="courses">
+              <form class="management-form" data-form="course">
+                <label>Curso <input required name="curso" placeholder="Nome do curso" /></label>
+                <label>Instrutor <input required name="instrutor" placeholder="Instrutor responsável" /></label>
+                <label>Período <input required name="periodo" placeholder="Ex.: 15 a 19/06" /></label>
+                <button class="button primary" type="submit">Criar turma</button>
+              </form>
+              <div class="course-board" id="courseBoard"></div>
+            </section>
+
+            <section class="tab-panel" id="pending">
+              <div class="notice">
+                Solicitações de registro precisam ser aprovadas pelo Comandante,
+                Sub Comando ou Administrativo da Força Tática.
+              </div>
+              <ul class="record-list" id="pendingList"></ul>
+            </section>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <span>Força Tática 13&deg; BPM</span>
+        <span>Controle de acesso, auditoria e integridade dos registros.</span>
+      </footer>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
